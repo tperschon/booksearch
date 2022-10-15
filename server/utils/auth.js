@@ -1,39 +1,37 @@
-const jwt = require('jsonwebtoken');
+// import jwt-decode dependency
+import decode from 'jwt-decode';
 
-// set token secret and expiration date
-const secret = 'mysecretsshhhhh';
-const expiration = '2h';
-
-module.exports = {
-  // function for our authenticated routes
-  authMiddleware: function (req, res, next) {
-    // allows token to be sent via  req.query or headers
-    let token = req.query.token || req.headers.authorization;
-
-    // ["Bearer", "<tokenvalue>"]
-    if (req.headers.authorization) {
-      token = token.split(' ').pop().trim();
-    }
-
-    if (!token) {
-      return res.status(400).json({ message: 'You have no token!' });
-    }
-
-    // verify token and get user data out of it
+class AuthService {
+  // runs decode on the results from getToken
+  getProfile() { return decode(this.getToken()) };
+  // loggedIn status verifier, returns a boolean, checks if there even is a token, then ensure it's not expired
+  loggedIn() {
+    // we store getToken here so we can feed into isTokenExpired and make fewer calls
+    const token = this.getToken();
+    return !!token && !this.isTokenExpired(token);
+  };
+  // checks if the given token is expired
+  isTokenExpired(token) {
     try {
-      const { data } = jwt.verify(token, secret, { maxAge: expiration });
-      req.user = data;
-    } catch {
-      console.log('Invalid token');
-      return res.status(400).json({ message: 'invalid token!' });
-    }
-
-    // send to next endpoint
-    next();
-  },
-  signToken: function ({ username, email, _id }) {
-    const payload = { username, email, _id };
-
-    return jwt.sign({ data: payload }, secret, { expiresIn: expiration });
-  },
+      const decoded = decode(token);
+      if (decoded.exp < Date.now() / 1000) {
+        return true;
+      } else return false;
+      // we catch an error and return false so if anything is wrong with decode we don't erroneously authenticate a token
+    } catch (err) { return false };
+  };
+  // retrieve the token from user's localStorage
+  getToken() { return localStorage.getItem('id_token') };
+  // we call this when logging somebody in, with given token, store it on user's localStorage and relocate them to home page
+  login(idToken) {
+    localStorage.setItem('id_token', idToken);
+    window.location.assign('/');
+  };
+  // same as login but clears the token from localStorage
+  logout() {
+    localStorage.removeItem('id_token');
+    window.location.assign('/');
+  };
 };
+
+export default new AuthService();
