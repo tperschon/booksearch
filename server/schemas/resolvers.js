@@ -1,6 +1,6 @@
 // import dependencies
 const { AuthenticationError, UserInputError } = require('apollo-server-express');
-const { Book, User } = require('../models/index')
+const { User } = require('../models/index')
 const { signToken } = require('../utils/auth');
 // general error for email/password being wrong, written as function so we have no chance of giving different messages for different error states
 const authError = function () {
@@ -14,7 +14,7 @@ const resolvers = {
             if (context.user) {
                 return await User
                     .findById(context.user._id)
-                    .populate({ path: 'savedBooks', model: Book });
+                    .populate({ path: 'savedBooks'});
             } else throw new AuthenticationError('Not logged in.');
         },
     },
@@ -59,11 +59,11 @@ const resolvers = {
             };
         },
         // delete a book by the bookId from a User's savedBooks
-        removeBook: async (parents, { bookId }, context) => {
+        removeBook: async (parents, { id }, context) => {
             try {
                 const updatedUser = await User.findOneAndUpdate(
                     { _id: context.user._id },
-                    { $pull: { savedBooks: { bookId: bookId } } },
+                    { $pull: { savedBooks: { bookId: id } } },
                     { new: true }
                 );
                 return updatedUser;

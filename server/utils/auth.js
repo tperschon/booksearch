@@ -1,8 +1,8 @@
 // import jwt and dotenv
 const jwt = require('jsonwebtoken');
-require('dotenv');
+require('dotenv').config();
 // secret stored in environment variable
-const secret = process.env.SEC;
+const secret = 'whyisthis';
 // this is a book lookup tool so a long expiration is fine, we'd change this if it involved more intimiate details
 const expiration = '24h';
 
@@ -16,8 +16,8 @@ module.exports = {
     if (req.headers.authorization) { token = token.split(' ').pop().trim() };
     // try to verify the token against the secret, ensure it's not expired
     try {
-      const { verified } = jwt.verify(token, secret, { maxAge: expiration });
-      req.user = verified;
+      const { data } = jwt.verify(token, secret, { maxAge: expiration });
+      req.user = data;
     } catch {
       req.error = 'Verification error.'
       console.log('Error verifying token.');
