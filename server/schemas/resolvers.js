@@ -9,9 +9,9 @@ const authError = () => {
 
 const resolvers = {
     Query: {
-        me: async (parent, args) => {
+        me: async (parent, args, context) => {
             // code this
-        }
+        },
     },
     Mutation: {
         // adds a user and signs them, returns token/user
@@ -32,6 +32,13 @@ const resolvers = {
             const token = signToken(user);
             return { token, user };
         },
+        saveBook: async (parents, args) => {
+            // code this
+        },
+        deleteBook: async (parents, args) => {
+            // code this
+        }
+
     },
 };
 
