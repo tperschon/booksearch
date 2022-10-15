@@ -39,7 +39,7 @@ const resolvers = {
         },
         // add a book in the form of an object to User's savedBooks
         saveBook: async (parents, { BookParams: { authors, description, title, bookId, image, link }}, context) => {
-            console.log("yep")
+            // set up our book object
             const book = {
                 authors: authors,
                 description: description,
@@ -48,6 +48,7 @@ const resolvers = {
                 image: image,
                 link: link
             };
+            // try-catch to update a User with the book object added to their savedBooks array
             try {
                 const updatedUser = await User.findOneAndUpdate(
                     { _id: context.user._id },
@@ -62,6 +63,7 @@ const resolvers = {
         },
         // delete a book by the bookId from a User's savedBooks
         removeBook: async (parents, { bookId }, context) => {
+            // try-catch to update a User by pulling the book object with the bookId matching the given one from their savedBooks array
             try {
                 const updatedUser = await User.findOneAndUpdate(
                     { _id: context.user._id },

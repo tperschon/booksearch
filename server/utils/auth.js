@@ -2,7 +2,7 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 // secret stored in environment variable
-const secret = 'whyisthis';
+const secret = process.env.SEC;
 // this is a book lookup tool so a long expiration is fine, we'd change this if it involved more intimiate details
 const expiration = '24h';
 
