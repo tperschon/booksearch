@@ -23,7 +23,7 @@ app.use('/images', express.static(path.join(__dirname, '../client/images')));
 // if we're in production, we use this path
 if (process.env.NODE_ENV === 'production') { app.use(express.static(path.join(__dirname, '../client/build'))) };
 // wildcard directs through index
-app.get('*', (req, res) => { res.sendFile(path.join(__dirname, '../client/build/index.html')) });
+app.get('/', (req, res) => { res.sendFile(path.join(__dirname, '../client/build/index.html')) });
 // apollo server function using graphQL defs
 const startApolloServer = async (typeDefs, resolvers) => {
   await server.start();

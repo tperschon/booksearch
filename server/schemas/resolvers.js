@@ -38,11 +38,13 @@ const resolvers = {
             return { token, user };
         },
         // add a book in the form of an object to User's savedBooks
-        saveBook: async (parents, { authors, description, bookId, image, link}, context) => {
+        saveBook: async (parents, { BookParams: { authors, description, title, bookId, image, link }}, context) => {
+            console.log("yep")
             const book = {
                 authors: authors,
                 description: description,
                 bookId: bookId,
+                title: title,
                 image: image,
                 link: link
             };
