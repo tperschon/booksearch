@@ -65,10 +65,8 @@ const SearchBooks = () => {
     // get token
     const token = Auth.loggedIn() ? Auth.getToken() : null;
     // confirm token
-    if (!token) {
-      return false;
-    };
-
+    if (!token) { return false };
+    // try-catch to save book and update state
     try {
       const response = await saveBook({
         variables: {
@@ -82,18 +80,12 @@ const SearchBooks = () => {
           }
         }
       });
-      console.log('5')
-
-      if (!response) {
-        console.log('nope')
-        throw new Error('something went wrong!');
-      }
-      console.log('6')
+      // if we have don't have a response, throw an error
+      if (!response) throw new Error('something went wrong!');
 
       // if book successfully saves to user's account, save book id to state
       setSavedbookIds([...savedbookIds, bookToSave.bookId]);
     } catch (err) {
-      console.log('cat')
       console.error(err);
     }
   };

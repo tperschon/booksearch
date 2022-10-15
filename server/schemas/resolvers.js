@@ -61,11 +61,11 @@ const resolvers = {
             };
         },
         // delete a book by the bookId from a User's savedBooks
-        removeBook: async (parents, { id }, context) => {
+        removeBook: async (parents, { bookId }, context) => {
             try {
                 const updatedUser = await User.findOneAndUpdate(
                     { _id: context.user._id },
-                    { $pull: { savedBooks: { bookId: id } } },
+                    { $pull: { savedBooks: { bookId: bookId } } },
                     { new: true }
                 );
                 return updatedUser;

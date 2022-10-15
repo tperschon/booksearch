@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
-
-import { getMe, deleteBook } from '../utils/API';
 import Auth from '../utils/auth';
 import { removebookId } from '../utils/localStorage';
 import { GET_ME } from '../utils/queries';
@@ -21,51 +19,38 @@ const SavedBooks = () => {
   useEffect(() => {
     const getUserData = async () => {
       try {
+        // ensure user is logged in
         const token = Auth.loggedIn() ? Auth.getToken() : null;
-
         if (!token) { return false };
-        if (error) {
-          throw new Error('something went wrong!');
-        };
+        // if there was an error in query, throw an error
+        if (error) throw new Error('something went wrong!');
+        // set state with queried data
         setUserData(user.me);
-      } catch (err) {
-        console.error(err);
-      }
+      } catch (err) { console.error(err) };
     };
 
-    if(!loading) getUserData();
+    if (!loading) getUserData();
   }, [userDataLength]);
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
     const token = Auth.loggedIn() ? Auth.getToken() : null;
-
-    if (!token) {
-      return false;
-    }
-
+    if (!token) { return false };
     try {
-      const response = await deleteBook(bookId, token);
-
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const updatedUser = await response.json();
-      setUserData(updatedUser);
+      // remove book on bookId
+      const response = await removeBook({ variables: { bookId: bookId } });
+      // if no response/falsy response, throw error
+      if (!response) throw new Error('something went wrong!');
+      // otherwise we set the state with the data
+      setUserData(response.data.removeBook);
       // upon success, remove book's id from localStorage
       removebookId(bookId);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err) };
   };
 
   // if data isn't here yet, say so
-  if (!userDataLength) {
-    return <h2>LOADING...</h2>;
-  }
-
-  return (
+  if (!userDataLength) return <h2>LOADING...</h2>;
+  else return (
     <>
       <Jumbotron fluid className='text-light bg-dark'>
         <Container>
@@ -74,7 +59,7 @@ const SavedBooks = () => {
       </Jumbotron>
       <Container>
         <h2>
-          {userData.savedBooks.length
+          {userData.savedBooks
             ? `Viewing ${userData.savedBooks.length} saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
             : 'You have no saved books!'}
         </h2>
