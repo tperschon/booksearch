@@ -1,37 +1,33 @@
-// import jwt-decode dependency
-import decode from 'jwt-decode';
+// import jwt and dotenv
+const jwt = require('jsonwebtoken');
+require('dotenv');
+// secret stored in environment variable
+const secret = process.env.SEC;
+// this is a book lookup tool so a long expiration is fine, we'd change this if it involved more intimiate details
+const expiration = '24h';
 
-class AuthService {
-  // runs decode on the results from getToken
-  getProfile() { return decode(this.getToken()) };
-  // loggedIn status verifier, returns a boolean, checks if there even is a token, then ensure it's not expired
-  loggedIn() {
-    // we store getToken here so we can feed into isTokenExpired and make fewer calls
-    const token = this.getToken();
-    return !!token && !this.isTokenExpired(token);
-  };
-  // checks if the given token is expired
-  isTokenExpired(token) {
+module.exports = {
+  authMiddleware: function ({ req }) {
+    // find our token from any place in request
+    let token = req.body.token || req.query.token || req.headers.authorization;
+    // return request if there isn't a token
+    if (!token) return req;
+    // split the token off from the Bearer
+    if (req.headers.authorization) { token = token.split(' ').pop().trim() };
+    // try to verify the token against the secret, ensure it's not expired
     try {
-      const decoded = decode(token);
-      if (decoded.exp < Date.now() / 1000) {
-        return true;
-      } else return false;
-      // we catch an error and return false so if anything is wrong with decode we don't erroneously authenticate a token
-    } catch (err) { return false };
-  };
-  // retrieve the token from user's localStorage
-  getToken() { return localStorage.getItem('id_token') };
-  // we call this when logging somebody in, with given token, store it on user's localStorage and relocate them to home page
-  login(idToken) {
-    localStorage.setItem('id_token', idToken);
-    window.location.assign('/');
-  };
-  // same as login but clears the token from localStorage
-  logout() {
-    localStorage.removeItem('id_token');
-    window.location.assign('/');
-  };
+      const { verified } = jwt.verify(token, secret, { maxAge: expiration });
+      req.user = verified;
+    } catch {
+      req.error = 'Verification error.'
+      console.log('Error verifying token.');
+    }
+    // return the request, if token was verified req will have user, if not will have error
+    return req;
+  },
+  // function to actually sign token
+  signToken: function ({ username, email, _id }) {
+    const payload = { username, email, _id };
+    return jwt.sign({ data: payload }, secret, { expiresIn: expiration });
+  },
 };
-
-export default new AuthService();

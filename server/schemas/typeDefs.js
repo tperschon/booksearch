@@ -23,16 +23,16 @@ const typeDefs = gql`
     user: User
   }
 
-  type Query {
-    me: User
-  }
-
   input BookParams
     authors: [String!]
     description: String!
     bookId: Int!
     image: String!
     link: String!
+
+  type Query {
+    me: User
+  }
 
   type Mutation {
     login(email: String!, password: String!): Auth

@@ -35,7 +35,7 @@ const resolvers = {
         saveBook: async (parents, args) => {
             // code this
         },
-        deleteBook: async (parents, args) => {
+        removeBook: async (parents, args) => {
             // code this
         }
 
