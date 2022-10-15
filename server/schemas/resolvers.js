@@ -3,14 +3,19 @@ const { AuthenticationError, UserInputError } = require('apollo-server-express')
 const { Book, User } = require('../models/index')
 const { signToken } = require('../utils/auth');
 // general error for email/password being wrong, written as function so we have no chance of giving different messages for different error states
-const authError = () => {
+const authError = function () {
     throw new AuthenticationError('The provided email and/or password is incorrect.');
 };
 
 const resolvers = {
     Query: {
+        // get User info from contextual user, populated with savedBooks
         me: async (parent, args, context) => {
-            // code this
+            if (context.user) {
+                return await User
+                    .findById(context.user._id)
+                    .populate({ path: 'savedBooks', model: Book });
+            } else throw new AuthenticationError('Not logged in.');
         },
     },
     Mutation: {
@@ -32,13 +37,41 @@ const resolvers = {
             const token = signToken(user);
             return { token, user };
         },
-        saveBook: async (parents, args) => {
-            // code this
+        // add a book in the form of an object to User's savedBooks
+        saveBook: async (parents, { authors, description, bookId, image, link}, context) => {
+            const book = {
+                authors: authors,
+                description: description,
+                bookId: bookId,
+                image: image,
+                link: link
+            };
+            try {
+                const updatedUser = await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $addToSet: { savedBooks: book } },
+                    { new: true, runValidators: true }
+                );
+                return updatedUser;
+            } catch (err) {
+                console.log(err);
+                throw new UserInputError('Error saving book.');
+            };
         },
-        removeBook: async (parents, args) => {
-            // code this
+        // delete a book by the bookId from a User's savedBooks
+        removeBook: async (parents, { bookId }, context) => {
+            try {
+                const updatedUser = await User.findOneAndUpdate(
+                    { _id: context.user._id },
+                    { $pull: { savedBooks: { bookId: bookId } } },
+                    { new: true }
+                );
+                return updatedUser;
+            } catch (err) {
+                console.log(err);
+                throw new UserInputError('Error removing book.');
+            };
         }
-
     },
 };
 
